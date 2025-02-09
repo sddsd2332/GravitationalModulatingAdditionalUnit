@@ -1,0 +1,10 @@
+description.mekanism.gravitational_modulating_additional_unit=为‘重力调制单元’，添加附加功能
+module.gravitationalmodulatingunittweaks.fix_fov=无视觉变形
+module.gravitationalmodulatingunittweaks.fly_always=始终无视重力
+module.mekanism.gravitational_modulating_additional_unit=微重力操纵
+module.gravitationalmodulatingunittweaks.stop_immediately=无重力惯性
+module.gravitationalmodulatingunittweaks.vertical_speed=垂直速度修改
+constants.gravitationalmodulatingunittweaks.key_category=Mekanism - 微重力操纵单元
+constants.gravitationalmodulatingunittweaks.mod_name=微重力操纵单元
+key.gravitationalmodulatingunittweaks.vertical_speed=垂直速度修改开关
+item.module_gravitational_modulating_additional_unit.name=微重力操纵单元

@@ -1,7 +1,5 @@
 package giselle.gmut.common.content.gear.mekasuit;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import giselle.gmut.common.GMUTLang;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
@@ -11,142 +9,120 @@ import mekanism.api.gear.config.ModuleConfigItemCreator;
 import mekanism.api.gear.config.ModuleEnumData;
 import mekanism.common.CommonPlayerTickHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class ModuleGravitationalModulatingAdditionalUnit implements ICustomModule<ModuleGravitationalModulatingAdditionalUnit>
-{
-	private IModuleConfigItem<Boolean> flyAlways;
-	private IModuleConfigItem<Boolean> stopImmediately;
-	private IModuleConfigItem<Boolean> fixFOV;
-	private IModuleConfigItem<VerticalSpeed> verticalSpeed;
+public class ModuleGravitationalModulatingAdditionalUnit implements ICustomModule<ModuleGravitationalModulatingAdditionalUnit> {
+    private IModuleConfigItem<Boolean> flyAlways;
+    private IModuleConfigItem<Boolean> stopImmediately;
+    private IModuleConfigItem<Boolean> fixFOV;
+    private IModuleConfigItem<VerticalSpeed> verticalSpeed;
 
-	@Override
-	public void init(IModule<ModuleGravitationalModulatingAdditionalUnit> module, ModuleConfigItemCreator configItemCreator)
-	{
-		this.flyAlways = configItemCreator.createConfigItem("fly_always", GMUTLang.MODULE_FLY_ALWAYS, new ModuleBooleanData(false));
-		this.stopImmediately = configItemCreator.createConfigItem("stop_immediately", GMUTLang.MODULE_STOP_IMMEDIATELY, new ModuleBooleanData(true));
-		this.fixFOV = configItemCreator.createConfigItem("fix_fov", GMUTLang.MODULE_FIX_FOV, new ModuleBooleanData(false));
-		this.verticalSpeed = configItemCreator.createConfigItem("vertical_speed", GMUTLang.MODULE_VERTICAL_SPEED, new ModuleEnumData<>(VerticalSpeed.class, VerticalSpeed.OFF));
-	}
+    @Override
+    public void init(IModule<ModuleGravitationalModulatingAdditionalUnit> module, ModuleConfigItemCreator configItemCreator) {
+        this.flyAlways = configItemCreator.createConfigItem("fly_always", GMUTLang.MODULE_FLY_ALWAYS, new ModuleBooleanData(false));
+        this.stopImmediately = configItemCreator.createConfigItem("stop_immediately", GMUTLang.MODULE_STOP_IMMEDIATELY, new ModuleBooleanData(true));
+        this.fixFOV = configItemCreator.createConfigItem("fix_fov", GMUTLang.MODULE_FIX_FOV, new ModuleBooleanData(false));
+        this.verticalSpeed = configItemCreator.createConfigItem("vertical_speed", GMUTLang.MODULE_VERTICAL_SPEED, new ModuleEnumData<>(VerticalSpeed.class, VerticalSpeed.OFF));
+    }
 
-	@Override
-	public void tickServer(IModule<ModuleGravitationalModulatingAdditionalUnit> module, PlayerEntity player)
-	{
-		boolean hasGravitationalModulator = CommonPlayerTickHandler.isGravitationalModulationReady(player);
+    @Override
+    public void tickServer(IModule<ModuleGravitationalModulatingAdditionalUnit> module, EntityPlayer player) {
+        boolean hasGravitationalModulator = CommonPlayerTickHandler.isGravitationalModulationReady(player);
+        if (hasGravitationalModulator) {
+            if (this.flyAlways.get()) {
+                if (!player.isSneaking() && !player.capabilities.isFlying) {
+                    player.capabilities.isFlying = true;
+                    player.sendPlayerAbilities();
+                }
 
-		if (hasGravitationalModulator == true)
-		{
-			if (this.flyAlways.get() == true)
-			{
-				if (player.isShiftKeyDown() == false && player.abilities.flying == false)
-				{
-					player.abilities.flying = true;
-					player.onUpdateAbilities();
-				}
+            }
 
-			}
+        }
 
-		}
+    }
 
-	}
+    @Override
+    public void tickClient(IModule<ModuleGravitationalModulatingAdditionalUnit> module, EntityPlayer player) {
+        this.tickServer(module, player);
 
-	@Override
-	public void tickClient(IModule<ModuleGravitationalModulatingAdditionalUnit> module, PlayerEntity player)
-	{
-		this.tickServer(module, player);
+        boolean hasGravitationalModulator = CommonPlayerTickHandler.isGravitationalModulationReady(player);
 
-		boolean hasGravitationalModulator = CommonPlayerTickHandler.isGravitationalModulationReady(player);
+        if (hasGravitationalModulator) {
+            if (this.stopImmediately.get()) {
+                if (player.capabilities.isFlying && player.moveForward == 0.0F && player.moveStrafing == 0.0F) {
+                    player.motionY *= 1.0D;
+                }
 
-		if (hasGravitationalModulator == true)
-		{
-			if (this.stopImmediately.get() == true)
-			{
-				if (player.abilities.flying == true && player.zza == 0.0F && player.xxa == 0.0F)
-				{
-					Vector3d deltaMovement = player.getDeltaMovement();
-					player.setDeltaMovement(deltaMovement.multiply(0.0D, 1.0D, 0.0D));
-				}
+            }
 
-			}
+            if (player instanceof EntityPlayerSP clientPlayer) {
+                if (clientPlayer.capabilities.isFlying && Minecraft.getMinecraft().player == clientPlayer) {
+                    float j = 0.0F;
 
-			if (player instanceof ClientPlayerEntity)
-			{
-				ClientPlayerEntity clientPlayer = (ClientPlayerEntity) player;
+                    if (clientPlayer.movementInput.sneak) {
+                        j--;
+                    }
 
-				if (clientPlayer.abilities.flying == true && Minecraft.getInstance().getCameraEntity() == clientPlayer)
-				{
-					float j = 0.0F;
+                    if (clientPlayer.movementInput.jump) {
+                        j++;
+                    }
 
-					if (clientPlayer.input.shiftKeyDown == true)
-					{
-						j--;
-					}
+                    if (j != 0) {
+                        j *= (this.getVerticalSpeed().get().getSpeed() - 1.0F);
+                        Vec3d deltaMovement = new Vec3d(clientPlayer.motionX, clientPlayer.motionY, clientPlayer.motionZ);
+                        Vec3d in = deltaMovement.add(0.0D, j * clientPlayer.capabilities.getFlySpeed() * 3.0F, 0.0D);
+                        clientPlayer.motionX = in.x;
+                        clientPlayer.motionY = in.y;
+                        clientPlayer.motionZ = in.z;
+                    }
 
-					if (clientPlayer.input.jumping == true)
-					{
-						j++;
-					}
+                }
 
-					if (j != 0)
-					{
-						j *= (this.getVerticalSpeed().get().getSpeed() - 1.0F);
-						Vector3d deltaMovement = clientPlayer.getDeltaMovement();
-						clientPlayer.setDeltaMovement(deltaMovement.add(0.0D, j * clientPlayer.abilities.getFlyingSpeed() * 3.0F, 0.0D));
-					}
+            }
 
-				}
+        }
 
-			}
+    }
 
-		}
+    @Override
+    public void changeMode(IModule<ModuleGravitationalModulatingAdditionalUnit> module, EntityPlayer player, ItemStack stack, int shift, boolean displayChangeMessage) {
+        if (module.isEnabled()) {
+            VerticalSpeed prevSpeed = this.getVerticalSpeed().get();
+            VerticalSpeed nextSpeed = prevSpeed.adjust(shift);
 
-	}
+            if (prevSpeed != nextSpeed) {
+                this.getVerticalSpeed().set(nextSpeed);
 
-	@Override
-	public void changeMode(IModule<ModuleGravitationalModulatingAdditionalUnit> module, PlayerEntity player, ItemStack stack, int shift, boolean displayChangeMessage)
-	{
-		if (module.isEnabled() == true)
-		{
-			VerticalSpeed prevSpeed = this.getVerticalSpeed().get();
-			VerticalSpeed nextSpeed = prevSpeed.adjust(shift);
+                if (displayChangeMessage) {
+                    module.displayModeChange(player, GMUTLang.MODULE_VERTICAL_SPEED.getTranslationKey(), nextSpeed);
+                }
 
-			if (prevSpeed != nextSpeed)
-			{
-				this.getVerticalSpeed().set(nextSpeed);
+            }
 
-				if (displayChangeMessage == true)
-				{
-					module.displayModeChange(player, GMUTLang.MODULE_VERTICAL_SPEED.translate(), nextSpeed);
-				}
+        }
 
-			}
+    }
 
-		}
+    public IModuleConfigItem<Boolean> getFlyAlways() {
+        return this.flyAlways;
+    }
 
-	}
+    public IModuleConfigItem<Boolean> getStopImmediately() {
+        return this.stopImmediately;
+    }
 
-	public IModuleConfigItem<Boolean> getFlyAlways()
-	{
-		return this.flyAlways;
-	}
+    public IModuleConfigItem<Boolean> getFixFOV() {
+        return this.fixFOV;
+    }
 
-	public IModuleConfigItem<Boolean> getStopImmediately()
-	{
-		return this.stopImmediately;
-	}
-
-	public IModuleConfigItem<Boolean> getFixFOV()
-	{
-		return this.fixFOV;
-	}
-
-	public IModuleConfigItem<VerticalSpeed> getVerticalSpeed()
-	{
-		return this.verticalSpeed;
-	}
+    public IModuleConfigItem<VerticalSpeed> getVerticalSpeed() {
+        return this.verticalSpeed;
+    }
 
 }

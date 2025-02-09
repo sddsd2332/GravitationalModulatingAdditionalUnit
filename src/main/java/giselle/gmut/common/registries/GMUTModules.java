@@ -1,20 +1,12 @@
 package giselle.gmut.common.registries;
 
-import giselle.gmut.GravitationalModulatingUnitTweaks;
 import giselle.gmut.common.content.gear.mekasuit.ModuleGravitationalModulatingAdditionalUnit;
-import mekanism.common.registration.impl.ModuleDeferredRegister;
-import mekanism.common.registration.impl.ModuleRegistryObject;
-import net.minecraft.item.Rarity;
+import mekanism.api.gear.ModuleData;
+import mekanism.common.content.gear.ModuleHelper;
+import net.minecraft.item.EnumRarity;
 
-public class GMUTModules
-{
-	public static final ModuleDeferredRegister MODULES = new ModuleDeferredRegister(GravitationalModulatingUnitTweaks.MODID);
+public class GMUTModules {
 
-	public static final ModuleRegistryObject<ModuleGravitationalModulatingAdditionalUnit> GRAVITATIONAL_MODULATING_ADDITIONAL_UNIT = MODULES.register("gravitational_modulating_additional_unit", ModuleGravitationalModulatingAdditionalUnit::new, () -> GMUTItems.GRAVITATIONAL_MODULATING_ADDITIONAL_UNIT.asItem(), builder -> builder.maxStackSize(1).rarity(Rarity.RARE));
-
-	private GMUTModules()
-	{
-
-	}
+    public static final ModuleData<ModuleGravitationalModulatingAdditionalUnit> GRAVITATIONAL_MODULATING_ADDITIONAL_UNIT = ModuleHelper.register("gravitational_modulating_additional_unit", ModuleGravitationalModulatingAdditionalUnit::new, builder -> builder.maxStackSize(1).rarity(EnumRarity.RARE));
 
 }

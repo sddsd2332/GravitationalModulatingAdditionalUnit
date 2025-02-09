@@ -1,6 +1,6 @@
 {
-    "pack": {
-        "description": "examplemod resources",
-        "pack_format": 9
-    }
+  "pack": {
+    "pack_format": 3,
+    "description": "Resources used for MeK-ie-excavator"
+  }
 }
