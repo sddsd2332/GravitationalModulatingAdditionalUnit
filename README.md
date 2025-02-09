@@ -5,7 +5,7 @@ Provide addtional features
 
 ### 1.12.2
 
-* [1.12.2](https://github.com/sddsd2332/GravitationalModulatingAdditionalUnit/tree/1.12.2-mekanismceu)
+* [1.12.2](https://github.com/sddsd2332/GravitationalModulatingAdditionalUnit-1.12.2-mekanismceu/tree/1.12.2-mekanismceu)
 
 # License
 
